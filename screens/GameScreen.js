@@ -1,5 +1,8 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useState, useRef } from "react";
+import { Alert, View, Text, StyleSheet, Button } from "react-native";
+import Card from "../components/Card";
+
+import NumberContainer from "../components/NumberContainer";
 
 const generateRandomBetween = (min, max, exclude) => {
   min = Math.ceil(min);
@@ -17,8 +20,62 @@ const GameScreen = (props) => {
   const [currGuess, setCurrGuess] = useState(
     generateRandomBetween(1, 100, props.userChoice)
   );
-};
 
-const styles = StyleSheet.create({});
+  const currLow = useRef(1);
+  const currHigh = useRef(100);
+
+  const nextGuessHandler = (direction) => {
+    if (
+      (direction === "lower" && currGuess < props.userChoice) ||
+      (direction === "greater" && currGuess > props.userChoice)
+    ) {
+      Alert.alert("Don't lie!", "You know that this is wrong...", [
+        { text: "Sorry!", style: "cancel" },
+      ]);
+      return;
+    }
+
+    if (direction === "lower") {
+      currHigh.current = currGuess;
+    } else {
+      currLow.current = currGuess;
+    }
+
+    const nextNumber = generateRandomBetween(
+      currLow.current,
+      currHigh.current,
+      currGuess
+    );
+    setCurrGuess(nextNumber);
+  };
+
+  return (
+    <View style={styles.screen}>
+      <Text>Computer's Check</Text>
+      <NumberContainer>{currGuess}</NumberContainer>
+      <Card style={styles.button}>
+        <Button title="LOWER" onPress={nextGuessHandler.bind(this, "lower")} />
+        <Button
+          title="GREATER"
+          onPress={nextGuessHandler.bind(this, "greater")}
+        />
+      </Card>
+    </View>
+  );
+};
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    padding: 10,
+    alignItems: "center",
+  },
+  button: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 20,
+    width: 300,
+    maxWidth: "80%",
+  },
+});
 
 export default GameScreen;
